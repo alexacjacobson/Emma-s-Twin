@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emma's Twin</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-bg:#E6E0D2;
+  --color-card:#EDE8DF;
+  --color-blue:#3E64BE;
+  --color-blue-light:#7EB9D7;
+  --color-amber:#F29154;
+  --color-pink:#F25F54;
+  --color-red:#F25F54;
+  --color-text-btn:#E6E0D2;
+  --color-text-primary:#1A1A1A;
+  --color-text-secondary:#6B6760;
+  --color-border:rgba(0,0,0,0.08);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Figtree',sans-serif;background:var(--color-bg);min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+.phone-shell{width:390px;height:844px;background:var(--color-bg);border-radius:48px;box-shadow:0 8px 40px rgba(0,0,0,.13),0 2px 8px rgba(0,0,0,.07);display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+.status-bar{height:44px;background:var(--color-bg);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;z-index:10}
+.status-time{font-size:15px;font-weight:600;color:var(--color-text-primary)}
+.status-bt{display:flex;align-items:center;gap:6px}
+
+.screen-viewport{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--color-bg);transform:translateX(100%);will-change:transform}
+.screen.active{transform:translateX(0)}
+#screen-trends{overflow-y:auto;scrollbar-width:none}
+#screen-trends::-webkit-scrollbar{width:3px}
+#screen-trends::-webkit-scrollbar-track{background:transparent}
+#screen-trends::-webkit-scrollbar-thumb{background:transparent;border-radius:2px;transition:background .2s}
+#screen-trends:hover::-webkit-scrollbar-thumb,#screen-trends.scrolling::-webkit-scrollbar-thumb{background:rgba(0,0,0,.07)}
+#screen-history{scrollbar-width:none}
+#screen-history::-webkit-scrollbar{width:3px}
+#screen-history::-webkit-scrollbar-track{background:transparent}
+#screen-history::-webkit-scrollbar-thumb{background:transparent;border-radius:2px}
+#screen-history:hover::-webkit-scrollbar-thumb,#screen-history.scrolling::-webkit-scrollbar-thumb{background:rgba(0,0,0,.07)}
+
+.bottom-nav{height:64px;background:var(--color-bg);border-top:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:20}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 12px;border:none;background:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.nav-item svg{width:22px;height:22px;stroke:var(--color-text-secondary);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.nav-item span{font-size:10px;font-weight:600;color:var(--color-text-secondary);transition:color .2s}
+.nav-item.active svg{stroke:var(--color-blue)}
+.nav-item.active span{color:var(--color-blue)}
+
+.card{background:var(--color-card);border:1px solid var(--color-border);border-radius:12px;padding:16px}
+.btn-primary{width:100%;height:48px;background:var(--color-blue);color:var(--color-text-btn);border:none;border-radius:24px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
+.btn-primary:active{opacity:.85}
+.btn-secondary{width:100%;height:48px;background:transparent;color:var(--color-blue);border:1.5px solid var(--color-blue);border-radius:24px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:opacity .3s}
+.btn-secondary:active{opacity:.75}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* ── CHECK-IN ── */
+#screen-checkin{display:flex;flex-direction:column}
+.ci-sub-vp{position:relative;flex:1;overflow:hidden}
+.sub-step{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;padding:24px 22px 20px;display:flex;flex-direction:column;transform:translateX(100%);will-change:transform}
+.sub-step.active{transform:translateX(0)}
+
+.ci-step-nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0}
+.ci-nav-chevron{font-size:28px;color:var(--color-blue);background:none;border:none;cursor:pointer;padding:8px;font-family:inherit;line-height:1;flex:1;text-align:center}
+.ci-nav-chevron:last-child{text-align:right}
+.ci-nav-chevron:first-child{text-align:left}
+.ci-nav-chevron.hidden{opacity:0;pointer-events:none}
+
+.screen-title-top{font-size:36px;font-weight:500;color:var(--color-blue);margin-bottom:28px}
+.breathe-desc{font-size:16px;font-weight:500;color:var(--color-text-secondary);line-height:1.6;margin-bottom:28px;max-width:310px}
+
+.breathe-center-block{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+.countdown-wrap{display:flex;flex-direction:column;align-items:center;gap:0}
+.countdown-center{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.countdown-inner{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1}
+#countdown-num{font-size:80px;font-weight:600;color:var(--color-text-primary);line-height:1;font-variant-numeric:tabular-nums}
+.countdown-sec-label{font-size:13px;color:var(--color-text-secondary);font-weight:400;margin-top:4px}
+
+@keyframes breathe-scale{0%,100%{transform:scale(1);opacity:.65;stroke-width:16}50%{transform:scale(1.5);opacity:0;stroke-width:3}}
+.rp1,.rp2,.rp3{transform-origin:100px 100px}
+.breathing-active .rp1{animation:breathe-scale 5s ease-in-out infinite}
+.breathing-active .rp2{animation:breathe-scale 5s ease-in-out -.65s infinite}
+.breathing-active .rp3{animation:breathe-scale 5s ease-in-out -1.3s infinite}
+
+.countdown-ring-arc{stroke-dasharray:427.3;stroke-dashoffset:0}
+@keyframes drain-ring{from{stroke-dashoffset:0}to{stroke-dashoffset:427.3}}
+.countdown-ring-arc.running{animation:drain-ring 60s linear forwards}
+
+.breath-done-row{display:none;align-items:center;gap:8px;justify-content:center;margin-top:24px}
+.breath-done-row.visible{display:flex}
+.breath-done-text{font-size:16px;font-weight:500;color:var(--color-blue)}
+
+.feeling-question{font-size:18px;font-weight:600;color:var(--color-text-primary);margin-bottom:28px}
+.emoji-row{display:flex;justify-content:space-around;margin-bottom:28px}
+.emoji-opt{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.emoji-bg{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;transition:background .2s}
+.emoji-bg.selected{background:rgba(62,100,190,0.12)}
+.emoji-opt .emoji-label{font-size:13px;font-weight:600;color:var(--color-text-secondary);transition:color .2s}
+.emoji-opt.selected .emoji-label{color:var(--color-blue)}
+
+.stress-section{margin-bottom:24px}
+.stress-label{font-size:13px;font-weight:400;color:var(--color-text-secondary);margin-bottom:14px;display:block}
+.slider-outer{position:relative;margin-bottom:0}
+.slider-track-wrap{position:relative;height:28px;margin:0 2px}
+.slider-track-bg{position:absolute;top:50%;left:0;right:0;height:4px;border-radius:2px;background:var(--color-border);transform:translateY(-50%);pointer-events:none}
+.slider-track-fill{position:absolute;top:50%;left:0;height:4px;border-radius:2px;background:var(--color-blue-light);transform:translateY(-50%);pointer-events:none}
+.slider-nodes{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.sn{width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,0.12);flex-shrink:0}
+.sn.filled{background:var(--color-blue-light)}
+input.stress-range{position:absolute;top:0;left:0;width:100%;height:100%;-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:pointer;margin:0}
+input.stress-range::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--color-blue-light);border:none;cursor:pointer}
+input.stress-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--color-blue-light);border:none;cursor:pointer}
+.slider-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-top:6px;padding:0 2px}
+.slider-nums span.sn-active{color:var(--color-blue-light);font-weight:600}
+
+.note-section{margin-bottom:8px}
+.note-input{width:100%;border:none;border-bottom:1px solid var(--color-border);background:transparent;padding:10px 0;font-size:16px;font-weight:500;color:var(--color-text-primary);outline:none;font-family:inherit}
+.note-input::placeholder{color:var(--color-text-secondary);font-style:italic}
+
+/* ── TRENDS ── */
+#screen-trends{padding:0 0 140px}
+
+.today-section{padding:16px 22px 0}
+.health-stats-title-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.health-stats-title{font-size:36px;font-weight:500;color:var(--color-blue);line-height:1.1}
+.health-stats-bell{padding:4px 0 0 8px;flex-shrink:0}
+.today-header{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px}
+.section-subtitle{font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px}
+.date-nav{display:flex;align-items:center;gap:2px}
+.date-nav-btn{font-size:16px;color:var(--color-blue);background:none;border:none;cursor:pointer;padding:4px;font-family:inherit;line-height:1;transition:opacity .2s}
+.date-nav-btn:disabled{opacity:0.35;cursor:default}
+.date-nav-label{font-size:16px;font-weight:600;color:var(--color-text-primary);min-width:52px;text-align:center}
+
+.spectrum-wrap{width:100%;padding:0 4px;margin-bottom:14px}
+.spectrum-bar{height:6px;border-radius:3px;background:linear-gradient(to right,#7EB9D7 0%,#F29154 40%,#F25F54 70%,#C0362A 100%);position:relative;margin-bottom:7px}
+.spectrum-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#F25F54;border:2px solid #fff;box-shadow:0 0 0 1.5px #F25F54;transition:left .3s ease}
+.spectrum-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary)}
+
+.vitals-section{display:flex;flex-direction:column}
+.vital-row{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--color-border)}
+.vital-row:last-child{border-bottom:none}
+.vital-left{display:flex;flex-direction:column;gap:2px}
+.vital-name{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.vital-state{font-size:13px;font-weight:400;color:var(--color-text-secondary);text-align:right}
+.vital-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.vital-value-row{display:flex;align-items:baseline;gap:3px}
+.vital-value{font-size:22px;font-weight:600;color:var(--color-text-primary)}
+.vital-unit{font-size:13px;font-weight:400;color:var(--color-text-secondary)}
+.vital-delta{font-size:12px;font-weight:400;color:var(--color-text-secondary)}
+
+.section-divider{height:1px;background:var(--color-border);margin:20px 22px}
+
+.trends-chart-section{padding:0 22px}
+.trends-month{font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px}
+
+.metric-pills{display:flex;margin-top:10px;margin-bottom:0}
+.metric-pill{flex:1;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;background:var(--color-card);color:var(--color-text-secondary);font-family:inherit;transition:background .18s,color .18s;border:1.5px solid var(--color-border);border-radius:0;margin:0;text-align:center}
+.metric-pill:first-child{border-radius:20px 0 0 20px;border-right-width:0.75px}
+.metric-pill:not(:first-child):not(:last-child){border-left-width:0.75px;border-right-width:0.75px}
+.metric-pill:last-child{border-radius:0 20px 20px 0;border-left-width:0.75px}
+.metric-pill.active{background:var(--color-blue);color:var(--color-text-btn);border-color:var(--color-blue);z-index:1}
+.range-pills{display:flex;margin-top:0;margin-bottom:8px}
+.range-pill{padding:5px 0;flex:1;text-align:center;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .18s,color .18s;border:1.5px solid var(--color-border);background:var(--color-card);color:var(--color-text-secondary);border-radius:0;margin:0}
+.range-pill:first-child{border-radius:20px 0 0 20px;border-right-width:0.75px}
+.range-pill:not(:first-child):not(:last-child){border-left-width:0.75px;border-right-width:0.75px}
+.range-pill:last-child{border-radius:0 20px 20px 0;border-left-width:0.75px}
+.range-pill.active{background:var(--color-blue);color:var(--color-text-btn);border-color:var(--color-blue);z-index:1}
+
+.chart-container{position:relative;width:100%;margin-bottom:0}
+.chart-svg{width:100%;overflow:visible;display:block}
+#line-blue,#line-amber{stroke-dasharray:9999;stroke-dashoffset:9999}
+#line-blue.animate{animation:draw-line .85s ease forwards}
+#line-amber.animate{animation:draw-line .45s ease forwards}
+@keyframes draw-line{to{stroke-dashoffset:0}}
+
+.chart-key{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:6px;margin-bottom:0}
+.key-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-text-secondary)}
+.key-line{width:20px;height:2px;border-radius:1px}
+.key-line.blue{background:var(--color-blue)}
+.key-line.amber{background:#F25F54}
+.key-band-swatch{width:12px;height:8px;background:rgba(126,185,215,0.20);border:0.5px solid #7EB9D7;border-radius:1px;flex-shrink:0}
+
+.ci-checkin-section{padding:0 22px;margin-top:16px;margin-bottom:8px}
+.ci-checkin-section-label{font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px}
+.ci-checkin-card{background:var(--color-card);border-radius:12px;overflow:hidden}
+.ci-ce{border-bottom:1px solid var(--color-border)}
+.ci-ce:last-child{border-bottom:none}
+.ci-ce-header{display:flex;align-items:center;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;gap:0}
+.ci-ce-date{font-size:13px;font-weight:400;color:var(--color-text-secondary);width:48px;flex-shrink:0}
+.ci-ce-emoji{flex:1;display:flex;justify-content:center;align-items:center}
+.ci-ce-stress{font-size:13px;font-weight:400;color:var(--color-text-secondary);margin-right:10px;white-space:nowrap}
+.ci-ce-chevron{font-size:16px;color:var(--color-text-secondary);transition:transform .25s;line-height:1;flex-shrink:0}
+.ci-ce.expanded .ci-ce-chevron{transform:rotate(90deg)}
+.ci-ce-detail{max-height:0;overflow:hidden;transition:max-height .3s ease,opacity .25s;opacity:0}
+.ci-ce.expanded .ci-ce-detail{max-height:200px;opacity:1}
+.ci-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;padding:10px 12px;background:rgba(255,255,255,0.3);border-top:1px solid rgba(0,0,0,0.08)}
+.ci-grid-cell{display:flex;flex-direction:column;gap:1px}
+.ci-grid-label{font-size:11px;color:var(--color-text-secondary)}
+.ci-grid-value{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.ci-grid-state{font-size:11px}
+
+.drift-sticky-bar{position:absolute;bottom:64px;left:0;right:0;padding:0 16px 12px;z-index:15;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s ease;visibility:hidden}
+.drift-sticky-bar.visible{opacity:1;transform:translateY(0);visibility:visible}
+.drift-wrap{position:relative;margin:0;pointer-events:all}
+.drift-ping{position:absolute;top:-5px;right:14px;width:12px;height:12px;border-radius:50%;background:#F25F54;z-index:2}
+.drift-ping::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:#F25F54;opacity:.5;animation:ping-glow 1.6s ease-out infinite}
+.drift-ping::after{content:'';position:absolute;inset:-8px;border-radius:50%;background:#F25F54;opacity:.25;animation:ping-glow 1.6s ease-out .4s infinite}
+@keyframes ping-glow{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.4);opacity:0}}
+.btn-drift{width:100%;height:48px;background:var(--color-blue);color:#E6E0D2;border:none;border-radius:24px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,0.18),0 1px 4px rgba(0,0,0,0.10)}
+.btn-drift:active{opacity:.85}
+
+/* ── HISTORY ── */
+#screen-history{overflow-y:auto;padding:24px 22px}
+.history-title{font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:4px}
+.history-sub{font-size:13px;font-weight:400;color:var(--color-text-secondary);margin-bottom:24px;line-height:1.5}
+.history-list{display:flex;flex-direction:column}
+.history-entry{border-bottom:1px solid var(--color-border)}
+.history-entry:last-child{border-bottom:none}
+.history-entry-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.history-entry-date{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.history-entry.reviewed .history-entry-date{color:var(--color-text-secondary);font-weight:400}
+.history-status-pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px}
+.pill-reviewed{background:var(--color-blue-light);color:var(--color-blue)}
+.pill-awaiting{background:var(--color-amber);color:#7a4a1a}
+.history-detail{max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .25s ease;opacity:0}
+.history-detail.expanded{max-height:400px;opacity:1}
+.history-detail-inner{padding:0 0 16px}
+.hd-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px}
+.hd-date{color:var(--color-text-secondary);width:60px}
+.hd-val{font-weight:600;color:#F25F54;flex:1}
+.hd-arrow{color:#F25F54;display:flex}
+.hd-label{font-size:12px;color:var(--color-text-secondary);width:100px}
+.hd-detail{font-size:13px;color:var(--color-text-primary)}
+.hd-pills{display:flex;gap:5px;flex-wrap:wrap}
+.hd-note-row{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.hd-footer{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border)}
+.hd-reviewed-txt{font-size:13px;font-weight:600;color:var(--color-blue)}
+.hd-awaiting-txt{font-size:13px;color:var(--color-text-secondary)}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:absolute;inset:0;background:rgba(20,18,14,0.3);z-index:30;opacity:0;pointer-events:none;transition:opacity .35s ease}
+.drawer-overlay.visible{opacity:1;pointer-events:all}
+.drawer{position:absolute;bottom:0;left:0;right:0;height:591px;background:#E6E0D2;border-radius:20px 20px 0 0;z-index:40;transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+.drawer.open{transform:translateY(0)}
+.drawer-handle-row{padding:12px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab}
+.drawer-handle{width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,0.15)}
+.drawer-top{display:flex;align-items:flex-start;justify-content:space-between;padding:4px 20px 10px;flex-shrink:0}
+.drawer-title{font-size:16px;font-weight:600;color:var(--color-text-primary)}
+.drawer-ts{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.drawer-close{background:none;border:none;cursor:pointer;font-size:22px;color:#AAAAAA;line-height:1;padding:0}
+.drawer-body{flex:1;overflow-y:auto;padding:0 20px 24px;display:flex;flex-direction:column;gap:14px}
+.flagged-section{display:flex;flex-direction:column;gap:0;background:rgba(255,255,255,0.5);border-radius:12px;padding:0 12px}
+.flagged-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.08);font-size:13px;font-weight:500}
+.flagged-row:last-child{border-bottom:none}
+.flagged-date{color:var(--color-text-secondary);width:48px}
+.flagged-val{font-weight:600;color:#F25F54;flex:1}
+.flagged-arrow{color:#F25F54;display:flex}
+.flagged-label{color:var(--color-text-secondary);font-size:12px;width:88px}
+.flagged-detail{color:var(--color-text-secondary);font-size:14px;flex:1}
+.flagged-pills{display:flex;gap:5px}
+.gpill{background:var(--color-blue-light);color:var(--color-blue);font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px}
+.drawer-note{font-size:14px;color:var(--color-text-secondary);line-height:1.55}
+.drawer-actions{display:flex;flex-direction:column;gap:10px}
+.drawer-confirm-row{display:none;align-items:center;justify-content:center;gap:8px;height:48px}
+.drawer-confirm-row.visible{display:flex}
+.drawer-confirm-txt{font-size:15px;font-weight:500;color:var(--color-blue)}
+.drawer-final{display:none;background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px;font-size:14px;font-weight:500;color:var(--color-text-secondary);line-height:1.6;text-align:center;opacity:0;transition:opacity .4s}
+.drawer-final.visible{display:block}
+.drawer-final.fade-in{opacity:1}
+
+/* ── LOCK SCREEN ── */
+#screen-lockscreen{position:absolute;inset:0;z-index:50;will-change:transform;overflow:hidden}
+.lock-bg-img{position:absolute;inset:-8px;background-image:url('lockscreen.jpg');background-size:cover;background-position:center;filter:blur(4px);transform:scale(1.03)}
+.lock-dark-overlay{position:absolute;inset:0;z-index:1;background:rgba(0,0,0,0.12)}
+.lock-status-bar{height:44px;display:flex;align-items:center;justify-content:flex-end;padding:0 24px;flex-shrink:0;position:relative;z-index:2}
+.lock-bt{display:flex;align-items:center;gap:6px}
+.lock-time-section{position:absolute;top:22%;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2}
+.lock-time-glow{position:absolute;width:320px;height:160px;top:-28px;left:50%;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(0,0,0,.18) 0%,transparent 65%);pointer-events:none}
+.lock-time{font-size:52px;font-weight:300;color:#fff;line-height:1;position:relative;z-index:1;letter-spacing:-1px}
+.lock-date{font-size:16px;font-weight:400;color:rgba(255,255,255,.85);position:relative;z-index:1}
+.lock-notification{position:absolute;top:65%;left:16px;right:16px;z-index:2;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);border-radius:16px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform 100ms ease;user-select:none}
+.lock-notification:active{transform:scale(.97)}
+.lock-notif-inner{display:flex;align-items:center;gap:12px}
+.lock-app-icon{width:52px;height:52px;border-radius:12px;flex-shrink:0;overflow:hidden}
+.lock-notif-text{display:flex;flex-direction:column;gap:3px;flex:1}
+.lock-notif-title{font-size:14px;font-weight:600;color:#fff;line-height:1.3}
+.lock-notif-msg{font-size:14px;font-weight:400;color:rgba(255,255,255,.9);line-height:1.4}
+.lock-bottom{position:absolute;bottom:16px;left:0;right:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px}
+.lock-home-indicator{width:120px;height:4px;border-radius:2px;background:rgba(255,255,255,.6)}
+.lock-bottom-icons{display:flex;align-items:center;justify-content:space-between;padding:0 64px;width:100%}
+.lock-icon-circle{width:44px;height:44px;border-radius:50%;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+
+/* ── BELL ── */
+.bell-btn{background:none;border:none;cursor:pointer;padding:3px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;flex-shrink:0;color:var(--color-text-secondary);line-height:1;position:relative}
+.bell-btn.unread{color:var(--color-red)}
+.bell-btn.unread::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:var(--color-red);opacity:.45;animation:bell-ping 1.8s ease-out infinite}
+.bell-btn.unread::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:var(--color-red);opacity:.25;animation:bell-ping 1.8s ease-out .6s infinite}
+@keyframes bell-ping{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.55);opacity:0}}
+@keyframes bell-shake{
+  0%,100%{transform:rotate(0)}
+  15%{transform:rotate(-12deg)}30%{transform:rotate(10deg)}
+  45%{transform:rotate(-8deg)}60%{transform:rotate(6deg)}
+  75%{transform:rotate(-4deg)}
+}
+.bell-btn.shaking{animation:bell-shake 0.5s ease}
+
+/* ── NOTIFICATION PANEL ── */
+.notif-panel{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--color-bg);z-index:50;transform:translateX(100%);transition:transform 380ms cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column;will-change:transform}
+.notif-panel.open{transform:translateX(0)}
+.notif-panel-header{height:100px;display:flex;align-items:flex-end;gap:4px;padding:0 16px 14px 4px;flex-shrink:0;border-bottom:1px solid var(--color-border)}
+.notif-back-btn{font-size:28px;color:var(--color-blue);background:none;border:none;cursor:pointer;padding:8px;font-family:inherit;line-height:1;flex-shrink:0}
+.notif-header-title{font-size:20px;font-weight:600;color:var(--color-text-primary)}
+.notif-body{flex:1;overflow-y:auto;padding:0 16px}
+.notif-row{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,0.08);-webkit-tap-highlight-color:transparent}
+.notif-row:last-child{border-bottom:none}
+.notif-dot-col{width:7px;display:flex;align-items:flex-start;padding-top:20px;flex-shrink:0}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--color-red);flex-shrink:0}
+.notif-content{flex:1;min-width:0}
+.notif-time{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;display:block}
+.notif-row-title{font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px;display:block;line-height:1.3}
+.notif-row-body{font-size:13px;font-weight:400;color:var(--color-text-primary);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.notif-mychart-pill{display:inline-block;margin-top:5px;font-size:11px;color:#3E64BE;background:rgba(62,100,190,0.1);border-radius:20px;padding:3px 8px;cursor:pointer}
+.notif-row.read{cursor:default}
+.notif-row.read .notif-row-title{color:var(--color-text-secondary)}
+.notif-row.read .notif-row-body{color:var(--color-text-secondary);opacity:0.7}
+.notif-row.read .notif-time{opacity:0.6}
+
+/* ── MYCHART MODAL ── */
+.mychart-backdrop{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(0,0,0,0.18);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.mychart-backdrop.visible{opacity:1;pointer-events:all}
+.mychart-card{background:var(--color-card);border-radius:20px;padding:18px 24px 18px;width:270px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,0.18),0 2px 8px rgba(0,0,0,0.10);transform:scale(0.92);transition:transform .3s cubic-bezier(0.22,1,0.36,1)}
+.mychart-backdrop.visible .mychart-card{transform:scale(1)}
+.mychart-app-icon{width:112px;height:112px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mychart-app-icon img{width:112px;height:112px;object-fit:contain}
+.mychart-card-title{font-size:16px;font-weight:600;color:var(--color-text-primary);text-align:center;line-height:1.3}
+.mychart-card-sub{font-size:13px;color:var(--color-text-secondary);text-align:center;line-height:1.5}
+.mychart-spinner-row{display:flex;align-items:center;gap:10px}
+.mychart-spinner{width:18px;height:18px;border:2.5px solid rgba(62,100,190,0.2);border-top-color:var(--color-blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.mychart-loading-txt{font-size:13px;color:var(--color-blue);font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+
+<div class="status-bar">
+  <span class="status-time">9:41</span>
+  <div class="status-bt">
+    <!-- Signal bars -->
+    <svg width="17" height="12" viewBox="0 0 17 12" fill="var(--color-text-primary)">
+      <rect x="0" y="8" width="3" height="4" rx="0.5"/>
+      <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5"/>
+      <rect x="9" y="3" width="3" height="9" rx="0.5"/>
+      <rect x="13.5" y="0" width="3" height="12" rx="0.5"/>
+    </svg>
+    <!-- WiFi -->
+    <svg width="16" height="12" viewBox="0 0 16 12">
+      <circle cx="8" cy="11" r="1.3" fill="var(--color-text-primary)"/>
+      <path d="M4.8 7.8 Q8 5 11.2 7.8" stroke="var(--color-text-primary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M1.8 4.8 Q8 0 14.2 4.8" stroke="var(--color-text-primary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <!-- Battery -->
+    <svg width="27" height="13" viewBox="0 0 27 13">
+      <rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="var(--color-text-primary)" stroke-opacity="0.4" stroke-width="1" fill="none"/>
+      <rect x="23" y="4" width="3" height="5" rx="1.5" fill="var(--color-text-primary)" fill-opacity="0.4"/>
+      <rect x="2" y="2" width="17" height="9" rx="2" fill="var(--color-text-primary)"/>
+    </svg>
+  </div>
+</div>
+
+<div class="screen-viewport">
+
+  <!-- CHECK-IN SCREEN -->
+  <div id="screen-checkin" class="screen">
+    <div class="ci-sub-vp" id="ci-sub-vp">
+
+      <div id="step-1a" class="sub-step active">
+        <div class="screen-title-top">Daily Check-In</div>
+        <div class="breathe-desc">Breathe normally into your monitor for 60 seconds</div>
+
+        <div class="breathe-center-block">
+          <div id="countdown-wrap" class="countdown-wrap">
+            <div class="countdown-center">
+              <svg width="200" height="200" viewBox="0 0 200 200" style="overflow:visible">
+                <defs>
+                  <filter id="ripple-blur" x="-80%" y="-80%" width="260%" height="260%">
+                    <feGaussianBlur stdDeviation="6"/>
+                  </filter>
+                </defs>
+                <circle class="rp1" cx="100" cy="100" r="68" fill="none" stroke="var(--color-blue-light)" filter="url(#ripple-blur)"/>
+                <circle class="rp2" cx="100" cy="100" r="68" fill="none" stroke="var(--color-blue-light)" filter="url(#ripple-blur)"/>
+                <circle class="rp3" cx="100" cy="100" r="68" fill="none" stroke="var(--color-blue-light)" filter="url(#ripple-blur)"/>
+                <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="9"/>
+                <circle id="countdown-arc" class="countdown-ring-arc"
+                  cx="100" cy="100" r="68" fill="none" stroke="var(--color-blue-light)" stroke-width="9"
+                  stroke-linecap="round" transform="rotate(-90 100 100)"/>
+              </svg>
+              <div class="countdown-inner">
+                <span id="countdown-num">60</span>
+                <span class="countdown-sec-label">seconds</span>
+              </div>
+            </div>
+          </div>
+          <button id="start-btn" class="btn-primary">Start breathing</button>
+        </div>
+
+        <div id="breath-done-row" class="breath-done-row">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="10" fill="var(--color-blue)"/>
+            <polyline points="5.5,10.5 8.5,13.5 14.5,7" fill="none" stroke="var(--color-text-btn)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="breath-done-text">Results uploaded via Bluetooth.</span>
+        </div>
+      </div>
+
+      <div id="step-1b" class="sub-step">
+        <div class="screen-title-top">Daily Check-In</div>
+        <div class="feeling-question">How are you feeling today?</div>
+
+        <div class="emoji-row">
+          <div class="emoji-opt" data-val="good" onclick="selectMood(this)">
+            <div class="emoji-bg">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="23" stroke="#CCCCCC" stroke-width="2"/>
+                <circle cx="19" cy="22" r="2.5" fill="#444"/>
+                <circle cx="33" cy="22" r="2.5" fill="#444"/>
+                <path d="M17 32 Q26 40 35 32" stroke="#444" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            <span class="emoji-label">Good</span>
+          </div>
+          <div class="emoji-opt" data-val="ok" onclick="selectMood(this)">
+            <div class="emoji-bg">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="23" stroke="#CCCCCC" stroke-width="2"/>
+                <circle cx="19" cy="22" r="2.5" fill="#444"/>
+                <circle cx="33" cy="22" r="2.5" fill="#444"/>
+                <line x1="18" y1="34" x2="34" y2="34" stroke="#444" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="emoji-label">Ok</span>
+          </div>
+          <div class="emoji-opt" data-val="sick" onclick="selectMood(this)">
+            <div class="emoji-bg">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                <circle cx="26" cy="26" r="23" stroke="#CCCCCC" stroke-width="2"/>
+                <circle cx="19" cy="22" r="2.5" fill="#444"/>
+                <circle cx="33" cy="22" r="2.5" fill="#444"/>
+                <path d="M17 37 Q26 29 35 37" stroke="#444" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+            </div>
+            <span class="emoji-label">Sick</span>
+          </div>
+        </div>
+
+        <div class="stress-section">
+          <span class="stress-label">Stress level</span>
+          <div class="slider-outer">
+            <div class="slider-track-wrap">
+              <div class="slider-track-bg"></div>
+              <div id="stress-fill" class="slider-track-fill" style="width:44%"></div>
+              <div class="slider-nodes" id="slider-nodes">
+                <span class="sn filled"></span><span class="sn filled"></span><span class="sn filled"></span><span class="sn filled"></span><span class="sn filled"></span>
+                <span class="sn"></span><span class="sn"></span><span class="sn"></span><span class="sn"></span><span class="sn"></span>
+              </div>
+              <input type="range" class="stress-range" id="stress-slider" min="1" max="10" value="5" oninput="updateStress(this.value)">
+            </div>
+          </div>
+          <div class="slider-nums" id="slider-nums">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span class="sn-active">5</span>
+            <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+          </div>
+        </div>
+
+        <div class="note-section">
+          <input type="text" class="note-input" id="note-input" placeholder="Anything worth noting?" oninput="checkinState.note = this.value">
+        </div>
+        <div style="flex:1;min-height:20px"></div>
+      </div>
+    </div>
+
+    <div class="ci-step-nav" id="ci-step-nav">
+      <button id="ci-back" class="ci-nav-chevron hidden" onclick="switchCheckinStep(1)">‹</button>
+      <button id="ci-skip" class="ci-nav-chevron" onclick="skipCountdown()" title="Next">›</button>
+    </div>
+  </div>
+
+  <!-- TRENDS SCREEN -->
+  <div id="screen-trends" class="screen">
+
+    <!-- 1. Health stats -->
+    <div class="today-section">
+      <div class="health-stats-title-row">
+        <div class="health-stats-title">Your health stats</div>
+        <button class="bell-btn health-stats-bell unread" id="bell-main" onclick="onBellTap(false)">
+          <svg width="20" height="24" viewBox="0 0 14 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 1v2"/>
+            <path d="M2.5 13V8Q2.5 3 7 3Q11.5 3 11.5 8v5"/>
+            <line x1="1" y1="13" x2="13" y2="13"/>
+            <path d="M5.5 13.5a1.5 1.5 0 0 0 3 0"/>
+          </svg>
+        </button>
+      </div>
+      <div class="date-nav" style="margin-bottom:12px">
+        <button id="date-prev" class="date-nav-btn" onclick="changeDay(1)">‹</button>
+        <span id="date-nav-label" class="date-nav-label">Apr 21</span>
+        <button id="date-next" class="date-nav-btn" onclick="changeDay(-1)" disabled>›</button>
+      </div>
+
+      <!-- Spectrum bar sub-header -->
+      <div class="spectrum-wrap">
+        <div class="spectrum-bar"><div id="spectrum-dot" class="spectrum-dot" style="left:69%"></div></div>
+        <div class="spectrum-labels"><span>Stable</span><span>Watch</span><span>Drift</span><span>Alert</span></div>
+      </div>
+
+      <!-- Vitals -->
+      <div class="vitals-section">
+        <div class="vital-row">
+          <div class="vital-left">
+            <span class="vital-name">FEV1</span>
+          </div>
+          <div class="vital-right">
+            <div class="vital-value-row">
+              <span id="vval-fev1" class="vital-value"></span>
+              <span id="vunit-fev1" class="vital-unit">%</span>
+            </div>
+            <span id="vdelta-fev1" class="vital-delta"></span>
+            <span id="vstate-fev1" class="vital-state"></span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-left">
+            <span class="vital-name">SpO₂</span>
+          </div>
+          <div class="vital-right">
+            <div class="vital-value-row">
+              <span id="vval-spo2" class="vital-value"></span>
+              <span id="vunit-spo2" class="vital-unit">%</span>
+            </div>
+            <span id="vdelta-spo2" class="vital-delta"></span>
+            <span id="vstate-spo2" class="vital-state"></span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-left">
+            <span class="vital-name">HRV</span>
+          </div>
+          <div class="vital-right">
+            <div class="vital-value-row">
+              <span id="vval-hrv" class="vital-value"></span>
+              <span id="vunit-hrv" class="vital-unit">ms</span>
+            </div>
+            <span id="vdelta-hrv" class="vital-delta"></span>
+            <span id="vstate-hrv" class="vital-state"></span>
+          </div>
+        </div>
+        <div class="vital-row">
+          <div class="vital-left">
+            <span class="vital-name">Resp rate</span>
+          </div>
+          <div class="vital-right">
+            <div class="vital-value-row">
+              <span id="vval-rr" class="vital-value"></span>
+              <span id="vunit-rr" class="vital-unit">/min</span>
+            </div>
+            <span id="vdelta-rr" class="vital-delta"></span>
+            <span id="vstate-rr" class="vital-state"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="section-divider"></div>
+
+    <!-- 2. Trend chart -->
+    <div class="trends-chart-section">
+      <div id="chart-heading" class="trends-month">Health trends</div>
+      <div class="range-pills">
+        <button class="range-pill active" data-range="2w" onclick="selectRange(this)">2 weeks</button>
+        <button class="range-pill" data-range="2m" onclick="selectRange(this)">2 months</button>
+        <button class="range-pill" data-range="6m" onclick="selectRange(this)">6 months</button>
+      </div>
+      <div class="chart-container" id="chart-container">
+        <svg id="trend-chart" class="chart-svg" viewBox="0 0 330 200" height="200" preserveAspectRatio="xMidYMid meet">
+          <line id="chart-yaxis" x1="296" y1="15" x2="296" y2="175" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+          <line id="chart-xaxis" x1="0" y1="175" x2="296" y2="175" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+          <rect id="baseline-band" x="0" y="0" width="296" height="0" fill="rgba(126,185,215,0.20)" stroke="none"/>
+          <text id="chart-yunit" x="300" y="8" font-family="Figtree,sans-serif" font-size="9" fill="#6B6760" text-anchor="start">FEV1 %pred</text>
+          <g id="chart-ylabels" font-family="Figtree,sans-serif" font-size="9" fill="#6B6760" text-anchor="start"></g>
+          <g id="chart-labels" font-family="Figtree,sans-serif" font-size="9" fill="#6B6760" text-anchor="middle"></g>
+          <polyline id="line-blue" fill="none" stroke="var(--color-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline id="line-amber" fill="none" stroke="#F25F54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="metric-pills">
+        <button class="metric-pill active" id="pill-fev1" onclick="selectMetric('fev1')">FEV1</button>
+        <button class="metric-pill" id="pill-spo2" onclick="selectMetric('spo2')">SpO₂</button>
+        <button class="metric-pill" id="pill-hrv" onclick="selectMetric('hrv')">HRV</button>
+        <button class="metric-pill" id="pill-rr" onclick="selectMetric('rr')">Resp rate</button>
+      </div>
+      <div class="chart-key">
+        <div class="key-item"><div class="key-line blue"></div><span>Within baseline</span></div>
+        <div class="key-item" id="key-drift"><div class="key-line amber"></div><span>Drift detected</span></div>
+        <div class="key-item"><div class="key-band-swatch"></div><span>Your normal range</span></div>
+      </div>
+    </div>
+
+    <!-- 3. Check-in history -->
+    <div class="ci-checkin-section">
+      <div class="ci-checkin-section-label">Daily check-in history</div>
+      <div class="ci-checkin-card" id="ci-history-card"></div>
+    </div>
+
+  </div><!-- /screen-trends -->
+
+  <!-- HISTORY SCREEN -->
+  <div id="screen-history" class="screen">
+    <div class="history-title">Care team history</div>
+    <div class="history-sub">A record of data sent to your care team.</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+</div><!-- /screen-viewport -->
+
+<div id="drift-sticky-bar" class="drift-sticky-bar">
+  <div class="drift-wrap">
+    <span class="drift-ping"></span>
+    <button class="btn-drift" onclick="openDrawer()">Drift detected — notify care team</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" data-tab="checkin" onclick="switchTab('checkin')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+    <span>Check-in</span>
+  </button>
+  <button class="nav-item" data-tab="trends" onclick="switchTab('trends')">
+    <svg viewBox="0 0 24 24"><polyline points="3 18 9 12 13 16 21 6"/></svg>
+    <span>Trends</span>
+  </button>
+  <button class="nav-item" data-tab="history" onclick="switchTab('history')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>History</span>
+  </button>
+</div>
+
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+
+<div id="drawer" class="drawer">
+  <div class="drawer-handle-row"><div class="drawer-handle"></div></div>
+  <div class="drawer-top">
+    <div>
+      <div class="drawer-title">Drift detected</div>
+      <div class="drawer-ts">Apr 21 · 06:14</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="flagged-section">
+      <div class="flagged-row"><span class="flagged-date">Apr 19</span><span class="flagged-val">85.2% <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">FEV1</span></span><span class="flagged-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="11"/><polyline points="3.5 7.5 7 11 10.5 7.5"/></svg></span></div>
+      <div class="flagged-row"><span class="flagged-date">Apr 20</span><span class="flagged-val">84.1% <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">FEV1</span></span><span class="flagged-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="11"/><polyline points="3.5 7.5 7 11 10.5 7.5"/></svg></span></div>
+      <div class="flagged-row"><span class="flagged-date">Apr 21</span><span class="flagged-val">83.0% <span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)">FEV1</span></span><span class="flagged-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="11"/><polyline points="3.5 7.5 7 11 10.5 7.5"/></svg></span></div>
+      <div class="flagged-row"><span class="flagged-label">Tidal volume</span><span class="flagged-detail">Slightly reduced.</span></div>
+      <div class="flagged-row"><span class="flagged-label">Check-ins</span><div class="flagged-pills"><span class="gpill">Good</span><span class="gpill">Good</span><span class="gpill">Good</span></div></div>
+      <div id="drawer-stress-row" class="flagged-row" style="display:none"><span class="flagged-label">Stress</span><span class="flagged-detail" id="drawer-stress-val"></span></div>
+      <div id="drawer-note-row" class="flagged-row" style="display:none"><span class="flagged-label">Note</span><span class="flagged-detail" id="drawer-note-val" style="font-style:italic"></span></div>
+    </div>
+    <div class="drawer-note">Compared against your personal baseline, not population averages.</div>
+    <div class="drawer-actions" id="drawer-actions">
+      <div style="position:relative">
+        <button id="drawer-send-btn" class="btn-primary" style="border-radius:14px">Send to care team</button>
+        <div id="drawer-confirm-row" class="drawer-confirm-row">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <polyline points="2,8 6,12 14,4" stroke="var(--color-blue)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="drawer-confirm-txt">Sent to care team</span>
+        </div>
+      </div>
+      <button id="drawer-monitor-btn" class="btn-secondary" style="border-radius:14px" onclick="handleMonitorOneMore()">Monitor one more night</button>
+    </div>
+    <div id="drawer-final" class="drawer-final">Your care team has been notified and has access to your flagged data.</div>
+  </div>
+</div>
+
+<!-- LOCK SCREEN -->
+<div id="screen-lockscreen">
+  <div class="lock-bg-img"></div>
+  <div class="lock-dark-overlay"></div>
+  <div class="lock-status-bar">
+    <div class="lock-bt">
+      <!-- Signal bars -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="white">
+        <rect x="0" y="8" width="3" height="4" rx="0.5"/>
+        <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5"/>
+        <rect x="9" y="3" width="3" height="9" rx="0.5"/>
+        <rect x="13.5" y="0" width="3" height="12" rx="0.5"/>
+      </svg>
+      <!-- WiFi -->
+      <svg width="16" height="12" viewBox="0 0 16 12">
+        <circle cx="8" cy="11" r="1.3" fill="white"/>
+        <path d="M4.8 7.8 Q8 5 11.2 7.8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M1.8 4.8 Q8 0 14.2 4.8" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <!-- Battery -->
+      <svg width="27" height="13" viewBox="0 0 27 13">
+        <rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="white" stroke-opacity="0.5" stroke-width="1" fill="none"/>
+        <rect x="23" y="4" width="3" height="5" rx="1.5" fill="white" fill-opacity="0.5"/>
+        <rect x="2" y="2" width="17" height="9" rx="2" fill="white"/>
+      </svg>
+    </div>
+  </div>
+  <div class="lock-time-section">
+    <div class="lock-time-glow"></div>
+    <span class="lock-time">7:30</span>
+    <span class="lock-date">Tuesday, April 21</span>
+  </div>
+  <div class="lock-notification" onclick="dismissLockScreen()">
+    <div class="lock-notif-inner">
+      <div class="lock-app-icon"><img src="Icon.svg" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <div class="lock-notif-text">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+          <span class="lock-notif-title">Good morning, Emma!</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.7);flex-shrink:0">now</span>
+        </div>
+        <div class="lock-notif-msg">Take a moment to breathe and check-in with yourself before you get going.</div>
+      </div>
+    </div>
+  </div>
+  <div class="lock-bottom">
+    <div class="lock-home-indicator"></div>
+    <div class="lock-bottom-icons">
+      <div class="lock-icon-circle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </div>
+      <div class="lock-icon-circle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6h12l-1.5 10a2 2 0 0 1-2 1.75h-5a2 2 0 0 1-2-1.75Z"/>
+          <path d="M9 2h6l1 4H8Z"/>
+          <line x1="12" y1="11" x2="12" y2="15"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel" class="notif-panel">
+  <div class="notif-panel-header">
+    <button class="notif-back-btn" onclick="closeNotifPanel()">‹</button>
+    <span class="notif-header-title">Notifications</span>
+  </div>
+  <div class="notif-body" id="notif-body"></div>
+  <!-- MyChart loading modal -->
+  <div class="mychart-backdrop" id="mychart-backdrop">
+    <div class="mychart-card">
+      <div class="mychart-app-icon">
+        <img src="MyChartIcon.png" alt="MyChart">
+      </div>
+      <div class="mychart-card-title">Opening MyChart</div>
+      <div class="mychart-card-sub">Connecting to your care team's portal</div>
+      <div class="mychart-spinner-row">
+        <div class="mychart-spinner"></div>
+        <span class="mychart-loading-txt">Loading…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /phone-shell -->
+
+<script>
+// ── Daily history data (index 0 = most recent) ────────────────────────────
+const DAILY_HISTORY = [
+  {date:'Apr 21',mood:'ok',  stress:7,fev1:82.1,spo2:96.8,hrv:51,respRate:15,
+   fev1State:'Drift',spo2State:'Watch',hrvState:'Stable',rrState:'Stable',spectrumPos:'69%'},
+  {date:'Apr 20',mood:'good',stress:5,fev1:83.8,spo2:97.0,hrv:50,respRate:15,
+   fev1State:'Drift',spo2State:'Watch',hrvState:'Stable',rrState:'Stable',spectrumPos:'69%'},
+  {date:'Apr 19',mood:'good',stress:6,fev1:85.5,spo2:97.2,hrv:52,respRate:15,
+   fev1State:'Watch',spo2State:'Stable',hrvState:'Stable',rrState:'Stable',spectrumPos:'43%'},
+  {date:'Apr 18',mood:'good',stress:3,fev1:87.1,spo2:97.4,hrv:53,respRate:14,
+   fev1State:'Stable',spo2State:'Stable',hrvState:'Stable',rrState:'Stable',spectrumPos:'10%'},
+  {date:'Apr 17',mood:'good',stress:4,fev1:87.8,spo2:97.6,hrv:54,respRate:15,
+   fev1State:'Stable',spo2State:'Stable',hrvState:'Stable',rrState:'Stable',spectrumPos:'10%'},
+  {date:'Apr 16',mood:'good',stress:2,fev1:88.2,spo2:97.5,hrv:52,respRate:14,
+   fev1State:'Stable',spo2State:'Stable',hrvState:'Stable',rrState:'Stable',spectrumPos:'10%'},
+  {date:'Apr 15',mood:'good',stress:3,fev1:88.5,spo2:97.8,hrv:55,respRate:14,
+   fev1State:'Stable',spo2State:'Stable',hrvState:'Stable',rrState:'Stable',spectrumPos:'10%'},
+];
+
+let currentDayIndex = 0;
+
+function stateColor(state) {
+  if (state === 'Drift') return '#F25F54';
+  if (state === 'Watch') return '#F29154';
+  return 'var(--color-blue)';
+}
+
+function formatDelta(metric, value) {
+  let d;
+  switch(metric) {
+    case 'fev1': {
+      d = parseFloat((value - 88.0).toFixed(1));
+      return (d > 0 ? '+' : '') + d.toFixed(1) + '% from baseline (88%)';
+    }
+    case 'spo2': {
+      d = parseFloat((value - 97.5).toFixed(1));
+      return (d > 0 ? '+' : '') + d.toFixed(1) + '% from baseline (97.5%)';
+    }
+    case 'hrv': {
+      d = value - 52;
+      return (d > 0 ? '+' : '') + d + 'ms from baseline (52ms)';
+    }
+    case 'rr': {
+      d = value - 15;
+      return (d > 0 ? '+' : '') + d + ' from baseline (15/min)';
+    }
+  }
+  return '';
+}
+
+function updateVitalsDisplay(idx) {
+  const d = DAILY_HISTORY[idx];
+  document.getElementById('date-nav-label').textContent = d.date;
+
+  const prevBtn = document.getElementById('date-prev');
+  const nextBtn = document.getElementById('date-next');
+  prevBtn.disabled = (idx === DAILY_HISTORY.length - 1);
+  nextBtn.disabled = (idx === 0);
+
+  document.getElementById('spectrum-dot').style.left = d.spectrumPos;
+
+  const vitals = [
+    {id:'fev1', value:d.fev1,    state:d.fev1State},
+    {id:'spo2', value:d.spo2,    state:d.spo2State},
+    {id:'hrv',  value:d.hrv,     state:d.hrvState},
+    {id:'rr',   value:d.respRate,state:d.rrState},
+  ];
+  vitals.forEach(v => {
+    const c = stateColor(v.state);
+    const stEl  = document.getElementById('vstate-' + v.id);
+    const valEl = document.getElementById('vval-'   + v.id);
+    const uEl   = document.getElementById('vunit-'  + v.id);
+    const dEl   = document.getElementById('vdelta-' + v.id);
+    stEl.textContent  = v.state;
+    stEl.style.color  = c;
+    valEl.textContent = v.value;
+    valEl.style.color = c;
+    if (uEl) uEl.style.color = c;
+    dEl.textContent   = formatDelta(v.id, v.value);
+    dEl.style.color   = 'var(--color-text-primary)';
+  });
+}
+
+function changeDay(direction) {
+  const newIdx = currentDayIndex + direction;
+  if (newIdx < 0 || newIdx >= DAILY_HISTORY.length) return;
+  currentDayIndex = newIdx;
+  updateVitalsDisplay(currentDayIndex);
+}
+
+// ── Chart datasets ────────────────────────────────────────────────────────
+const CHART_DATASETS_FEV1 = {
+  '2w':{driftIdx:11,points:[
+    {v:88.9,l:'8'},{v:89.1,l:'9'},{v:88.7,l:'10'},{v:88.5,l:'11'},
+    {v:88.8,l:'12'},{v:87.9,l:'13'},{v:88.3,l:'14'},{v:87.2,l:'15'},
+    {v:88.0,l:'16'},{v:87.6,l:'17'},{v:88.1,l:'18'},
+    {v:85.2,l:'19'},{v:84.1,l:'20'},{v:83.0,l:'21'},
+  ]},
+  '2m':{driftIdx:22,points:[
+    {v:88.5,l:'Feb 21'},{v:88.9},{v:87.8},{v:88.2},{v:89.0},{v:88.6},{v:87.5},
+    {v:88.3,l:'Mar 7'},{v:88.7},{v:87.9},{v:88.1},{v:89.1},{v:88.4},
+    {v:87.8,l:'Mar 21'},{v:88.6},{v:87.9},{v:88.2},{v:88.0},{v:89.0},
+    {v:88.4,l:'Apr 7'},{v:87.6},{v:88.1},
+    {v:85.2,l:'Apr 19'},{v:84.1,l:'Apr 20'},{v:83.0,l:'Apr 21'},
+  ]},
+  '6m':{driftIdx:22,points:[
+    {v:88.5,l:'Oct 23'},{v:88.9},{v:87.8},{v:89.0,l:'Nov 20'},{v:88.3},
+    {v:87.7},{v:88.6},{v:89.1,l:'Dec 25'},{v:88.0},{v:87.9},
+    {v:88.4,l:'Jan 22'},{v:87.5},{v:88.8},{v:89.0},{v:88.2,l:'Feb 19'},
+    {v:87.9},{v:88.5},{v:87.6},{v:88.9,l:'Mar 19'},{v:88.1},
+    {v:87.8},{v:88.3},
+    {v:85.2,l:'Apr 19'},{v:84.1,l:'Apr 20'},{v:83.0,l:'Apr 21'},
+  ]},
+};
+
+const CHART_DATASETS_SPO2 = {
+  '2w':{driftIdx:11,points:[
+    {v:97.8,l:'8'},{v:98.0,l:'9'},{v:97.9,l:'10'},{v:98.2,l:'11'},
+    {v:97.7,l:'12'},{v:98.1,l:'13'},{v:97.6,l:'14'},{v:97.8,l:'15'},
+    {v:97.5,l:'16'},{v:97.9,l:'17'},{v:97.7,l:'18'},
+    {v:97.2,l:'19'},{v:97.0,l:'20'},{v:96.8,l:'21'},
+  ]},
+  '2m':{driftIdx:22,points:[
+    {v:97.8,l:'Feb 21'},{v:98.1},{v:97.6},{v:98.0},{v:97.9},{v:98.2},{v:97.5},
+    {v:97.8,l:'Mar 7'},{v:98.0},{v:97.7},{v:98.1},{v:97.6},{v:98.2},
+    {v:97.9,l:'Mar 21'},{v:97.7},{v:98.0},{v:97.8},{v:97.6},{v:98.1},
+    {v:97.9,l:'Apr 7'},{v:98.0},{v:97.7},
+    {v:97.2,l:'Apr 19'},{v:97.0,l:'Apr 20'},{v:96.8,l:'Apr 21'},
+  ]},
+  '6m':{driftIdx:22,points:[
+    {v:97.8,l:'Oct 23'},{v:98.0},{v:97.9},{v:97.6,l:'Nov 20'},{v:98.1},
+    {v:97.7},{v:98.2},{v:97.8,l:'Dec 25'},{v:97.5},{v:98.0},
+    {v:97.9,l:'Jan 22'},{v:97.7},{v:98.1},{v:97.6},{v:97.8,l:'Feb 19'},
+    {v:98.0},{v:97.9},{v:97.7},{v:98.2,l:'Mar 19'},{v:97.6},
+    {v:97.8},{v:97.9},
+    {v:97.2,l:'Apr 19'},{v:97.0,l:'Apr 20'},{v:96.8,l:'Apr 21'},
+  ]},
+};
+
+const CHART_DATASETS_HRV = {
+  '2w':{driftIdx:13,points:[
+    {v:53,l:'8'},{v:54,l:'9'},{v:52,l:'10'},{v:55,l:'11'},
+    {v:53,l:'12'},{v:51,l:'13'},{v:54,l:'14'},{v:53,l:'15'},
+    {v:52,l:'16'},{v:55,l:'17'},{v:53,l:'18'},
+    {v:52,l:'19'},{v:50,l:'20'},{v:51,l:'21'},
+  ]},
+  '2m':{driftIdx:24,points:[
+    {v:53,l:'Feb 21'},{v:52},{v:54},{v:53},{v:52},{v:55},{v:53},
+    {v:54,l:'Mar 7'},{v:52},{v:53},{v:51},{v:54},{v:53},
+    {v:52,l:'Mar 21'},{v:54},{v:53},{v:52},{v:55},{v:53},
+    {v:54,l:'Apr 7'},{v:52},{v:53},
+    {v:52,l:'Apr 19'},{v:50,l:'Apr 20'},{v:51,l:'Apr 21'},
+  ]},
+  '6m':{driftIdx:24,points:[
+    {v:53,l:'Oct 23'},{v:54},{v:52},{v:55,l:'Nov 20'},{v:53},
+    {v:51},{v:54},{v:53,l:'Dec 25'},{v:52},{v:55},
+    {v:53,l:'Jan 22'},{v:51},{v:54},{v:53},{v:52,l:'Feb 19'},
+    {v:55},{v:53},{v:51},{v:54,l:'Mar 19'},{v:52},
+    {v:53},{v:54},
+    {v:52,l:'Apr 19'},{v:50,l:'Apr 20'},{v:51,l:'Apr 21'},
+  ]},
+};
+
+const CHART_DATASETS_RR = {
+  '2w':{driftIdx:13,points:[
+    {v:15,l:'8'},{v:14,l:'9'},{v:15,l:'10'},{v:16,l:'11'},
+    {v:15,l:'12'},{v:14,l:'13'},{v:15,l:'14'},{v:16,l:'15'},
+    {v:15,l:'16'},{v:14,l:'17'},{v:15,l:'18'},
+    {v:15,l:'19'},{v:15,l:'20'},{v:15,l:'21'},
+  ]},
+  '2m':{driftIdx:24,points:[
+    {v:15,l:'Feb 21'},{v:14},{v:15},{v:16},{v:15},{v:14},{v:15},
+    {v:15,l:'Mar 7'},{v:16},{v:15},{v:14},{v:15},{v:16},
+    {v:15,l:'Mar 21'},{v:14},{v:15},{v:16},{v:15},{v:14},
+    {v:15,l:'Apr 7'},{v:16},{v:15},
+    {v:15,l:'Apr 19'},{v:15,l:'Apr 20'},{v:15,l:'Apr 21'},
+  ]},
+  '6m':{driftIdx:24,points:[
+    {v:15,l:'Oct 23'},{v:14},{v:15},{v:16,l:'Nov 20'},{v:15},
+    {v:14},{v:15},{v:16,l:'Dec 25'},{v:15},{v:14},
+    {v:15,l:'Jan 22'},{v:16},{v:15},{v:14},{v:15,l:'Feb 19'},
+    {v:16},{v:15},{v:14},{v:15,l:'Mar 19'},{v:16},
+    {v:15},{v:14},
+    {v:15,l:'Apr 19'},{v:15,l:'Apr 20'},{v:15,l:'Apr 21'},
+  ]},
+};
+
+const METRIC_CONFIG = {
+  fev1:{yMin:81,yMax:91,yticks:[83,85,87,89],ytickSuffix:'%',
+    baselineLow:86.5,baselineHigh:89.5,heading:'Health trends',yunit:'FEV1 %pred',
+    datasets:CHART_DATASETS_FEV1,driftColor:'#F25F54'},
+  spo2:{yMin:93,yMax:99,yticks:[94,96,98],ytickSuffix:'%',
+    baselineLow:96.8,baselineHigh:98.2,heading:'Health trends',yunit:'SpO₂ %',
+    datasets:CHART_DATASETS_SPO2,driftColor:'#F29154'},
+  hrv:{yMin:44,yMax:60,yticks:[46,50,54,58],ytickSuffix:'',
+    baselineLow:48,baselineHigh:56,heading:'Health trends',yunit:'HRV ms',
+    datasets:CHART_DATASETS_HRV,driftColor:'var(--color-blue)'},
+  rr:{yMin:11,yMax:19,yticks:[12,14,16,18],ytickSuffix:'',
+    baselineLow:13,baselineHigh:17,heading:'Health trends',yunit:'Resp /min',
+    datasets:CHART_DATASETS_RR,driftColor:'var(--color-blue)'},
+};
+
+const CX = {xS:0,xE:296,yS:15,yE:175,yMin:81,yMax:91};
+function toX(i,n){ return CX.xS+(i/(n-1))*(CX.xE-CX.xS); }
+function toY(v){ return CX.yE-((v-CX.yMin)/(CX.yMax-CX.yMin))*(CX.yE-CX.yS); }
+
+function selectMetric(metric) {
+  activeMetric = metric;
+  const cfg = METRIC_CONFIG[metric];
+  CX.yMin = cfg.yMin; CX.yMax = cfg.yMax;
+  document.getElementById('chart-heading').textContent = cfg.heading;
+  document.getElementById('chart-yunit').textContent = cfg.yunit;
+  ['fev1','spo2','hrv','rr'].forEach(m => {
+    document.getElementById('pill-'+m).classList.toggle('active', m === metric);
+  });
+  // Update drift line color
+  document.getElementById('line-amber').setAttribute('stroke', cfg.driftColor);
+  const keyAmberLine = document.querySelector('.key-line.amber');
+  if (keyAmberLine) keyAmberLine.style.background = cfg.driftColor === 'var(--color-blue)' ? '#3E64BE' : cfg.driftColor;
+  const keyDrift = document.getElementById('key-drift');
+  if (keyDrift) keyDrift.style.display = cfg.driftColor === 'var(--color-blue)' ? 'none' : '';
+  resetChartAnimation();
+  renderChart(activeRange, true);
+}
+
+function resetChartAnimation() {
+  const lb = document.getElementById('line-blue');
+  const la = document.getElementById('line-amber');
+  lb.classList.remove('animate'); la.classList.remove('animate');
+  lb.style.strokeDashoffset = '9999'; la.style.strokeDashoffset = '9999';
+}
+
+function renderChart(rangeKey, animate) {
+  activeRange = rangeKey;
+  const cfg = METRIC_CONFIG[activeMetric];
+  const ds = cfg.datasets[rangeKey];
+  const pts = ds.points; const n = pts.length;
+  const di = ds.driftIdx;
+
+  const blueStr  = pts.slice(0,di+1).map((p,i)=>`${toX(i,n).toFixed(1)},${toY(p.v).toFixed(1)}`).join(' ');
+  const amberStr = pts.slice(di).map((p,i)=>`${toX(di+i,n).toFixed(1)},${toY(p.v).toFixed(1)}`).join(' ');
+
+  const lb = document.getElementById('line-blue');
+  const la = document.getElementById('line-amber');
+  lb.classList.remove('animate'); la.classList.remove('animate');
+  void lb.getBoundingClientRect();
+  lb.setAttribute('points', blueStr);
+  la.setAttribute('points', amberStr);
+
+  const bandY = toY(cfg.baselineHigh);
+  const bandH = toY(cfg.baselineLow) - toY(cfg.baselineHigh);
+  const band = document.getElementById('baseline-band');
+  band.setAttribute('y', bandY.toFixed(1));
+  band.setAttribute('height', bandH.toFixed(1));
+  document.getElementById('chart-yaxis').setAttribute('y2', CX.yE);
+  document.getElementById('chart-xaxis').setAttribute('y1', CX.yE);
+  document.getElementById('chart-xaxis').setAttribute('y2', CX.yE);
+
+  const suffix = cfg.ytickSuffix !== undefined ? cfg.ytickSuffix : '%';
+  const ygrp = document.getElementById('chart-ylabels'); ygrp.innerHTML='';
+  cfg.yticks.forEach(v => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x','300');
+    t.setAttribute('y',toY(v).toFixed(1));
+    t.setAttribute('dominant-baseline','middle');
+    t.textContent = v + suffix;
+    ygrp.appendChild(t);
+  });
+
+  const grp = document.getElementById('chart-labels'); grp.innerHTML='';
+  let lastLx = -99;
+  pts.forEach((p,i) => {
+    if (!p.l) return;
+    const lx = parseFloat(toX(i,n).toFixed(1));
+    if (lx-lastLx < 38) return;
+    lastLx = lx;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', lx);
+    t.setAttribute('y', (CX.yE+13).toString());
+    t.textContent = p.l;
+    grp.appendChild(t);
+  });
+
+  if (animate) {
+    lb.style.strokeDashoffset='9999'; la.style.strokeDashoffset='9999';
+    setTimeout(()=>{ lb.classList.add('animate'); setTimeout(()=>la.classList.add('animate'),850); },60);
+  } else {
+    lb.style.strokeDashoffset='0'; la.style.strokeDashoffset='0';
+  }
+}
+
+function selectRange(el) {
+  document.querySelectorAll('.range-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderChart(el.dataset.range, true);
+}
+
+// ── Lock screen ───────────────────────────────────────────────────────────
+let lockScreenDismissed = false;
+
+function dismissLockScreen() {
+  if (lockScreenDismissed) return;
+  lockScreenDismissed = true;
+  const ls = document.getElementById('screen-lockscreen');
+  const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  ls.style.transition = `transform 0.44s ${ease}`;
+  ls.style.transform = 'translateX(-100%)';
+  setTimeout(() => { ls.style.display = 'none'; }, 450);
+}
+
+function showLockScreen() {
+  const ls = document.getElementById('screen-lockscreen');
+  ls.style.display = '';
+  ls.style.transition = 'none';
+  ls.style.transform = 'translateX(-100%)';
+  void ls.offsetWidth;
+  const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  ls.style.transition = `transform 0.44s ${ease}`;
+  ls.style.transform = 'translateX(0)';
+  lockScreenDismissed = false;
+  setTimeout(() => { ls.style.transition = ''; }, 450);
+}
+
+// ── App state ─────────────────────────────────────────────────────────────
+let currentTab = 'checkin';
+let currentCheckinStep = 1;
+let drawerSent = false;
+let activeRange = '2w';
+let activeMetric = 'fev1';
+let breathRAF = null;
+let breathStart = null;
+const checkinState = {mood:null,stress:5,note:''};
+
+const TAB_SCREENS = {checkin:'screen-checkin',trends:'screen-trends',history:'screen-history'};
+const TAB_ORDER   = ['checkin','trends','history'];
+
+function switchTab(tab) {
+  if (tab === currentTab) return;
+  const prevScreenId = TAB_SCREENS[currentTab];
+  const nextScreenId = TAB_SCREENS[tab];
+  const prevIdx = TAB_ORDER.indexOf(currentTab);
+  const nextIdx = TAB_ORDER.indexOf(tab);
+  const forward = nextIdx >= prevIdx;
+  const fromEl = document.getElementById(prevScreenId);
+  const toEl   = document.getElementById(nextScreenId);
+  const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const dur = '0.44s';
+  toEl.style.transition = 'none';
+  toEl.style.transform = forward ? 'translateX(100%)' : 'translateX(-100%)';
+  toEl.classList.add('active');
+  void toEl.offsetWidth;
+  fromEl.style.transition = `transform ${dur} ${ease}`;
+  toEl.style.transition   = `transform ${dur} ${ease}`;
+  fromEl.style.transform  = forward ? 'translateX(-100%)' : 'translateX(100%)';
+  toEl.style.transform    = 'translateX(0)';
+  setTimeout(() => {
+    fromEl.classList.remove('active');
+    fromEl.style.transition = ''; fromEl.style.transform = '';
+    toEl.style.transition   = ''; toEl.style.transform   = '';
+  }, 460);
+  currentTab = tab;
+  updateNavBar();
+  onScreenEnter(nextScreenId);
+}
+
+function updateNavBar() {
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === currentTab);
+  });
+}
+
+function goHome() { switchTab('trends'); }
+
+function onScreenEnter(screenId) {
+  const driftBar = document.getElementById('drift-sticky-bar');
+  driftBar.classList.remove('visible');
+  if (screenId === 'screen-trends') {
+    setTimeout(() => driftBar.classList.add('visible'), 400);
+    resetChartAnimation();
+    renderChart(activeRange, true);
+  }
+  if (screenId === 'screen-history') renderHistory();
+  if (screenId === 'screen-checkin') {
+    if (currentCheckinStep !== 1 && currentCheckinStep !== 2) resetCheckin();
+    updateCiNav();
+  }
+}
+
+function switchCheckinStep(step) {
+  const from = step===2 ? document.getElementById('step-1a') : document.getElementById('step-1b');
+  const to   = step===2 ? document.getElementById('step-1b') : document.getElementById('step-1a');
+  const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const dur = '0.44s';
+  const fwd = step===2;
+  to.style.transition = 'none';
+  to.style.transform = fwd ? 'translateX(100%)' : 'translateX(-100%)';
+  to.classList.add('active');
+  void to.offsetWidth;
+  from.style.transition = `transform ${dur} ${ease}`;
+  to.style.transition   = `transform ${dur} ${ease}`;
+  from.style.transform  = fwd ? 'translateX(-100%)' : 'translateX(100%)';
+  to.style.transform    = 'translateX(0)';
+  setTimeout(() => {
+    from.classList.remove('active');
+    from.style.transition=''; from.style.transform='';
+    to.style.transition='';   to.style.transform='';
+  }, 460);
+  currentCheckinStep = step;
+  updateCiNav();
+}
+
+function updateCiNav() {
+  const backBtn = document.getElementById('ci-back');
+  const skipBtn = document.getElementById('ci-skip');
+  backBtn.classList.remove('hidden');
+  backBtn.onclick = currentCheckinStep === 1 ? showLockScreen : () => switchCheckinStep(1);
+  skipBtn.classList.remove('hidden');
+  skipBtn.onclick = currentCheckinStep===1 ? skipCountdown : goHome;
+}
+
+function resetCheckin() {
+  currentCheckinStep = 1;
+  document.getElementById('step-1a').classList.add('active');
+  document.getElementById('step-1b').classList.remove('active');
+  document.getElementById('step-1b').style.transform = 'translateX(100%)';
+  document.getElementById('start-btn').style.display = '';
+  document.getElementById('countdown-wrap').style.display = '';
+  document.getElementById('breath-done-row').classList.remove('visible');
+  document.getElementById('countdown-arc').classList.remove('running');
+  document.getElementById('countdown-arc').style.animation = '';
+  document.getElementById('countdown-arc').style.strokeDashoffset = '0';
+  document.getElementById('countdown-num').textContent = '60';
+  if (breathRAF) { cancelAnimationFrame(breathRAF); breathRAF = null; }
+  updateCiNav();
+}
+
+document.getElementById('start-btn').addEventListener('click', startBreathTest);
+
+function startBreathTest() {
+  document.getElementById('start-btn').style.visibility = 'hidden';
+  document.getElementById('countdown-arc').classList.add('running');
+  document.querySelector('.countdown-center').classList.add('breathing-active');
+  breathStart = performance.now();
+  updateCountdownNum();
+}
+
+function updateCountdownNum() {
+  const elapsed = (performance.now()-breathStart)/1000;
+  const remaining = Math.max(0, 60-elapsed);
+  document.getElementById('countdown-num').textContent = Math.ceil(remaining);
+  if (remaining<=0) { onBreathDone(); return; }
+  breathRAF = requestAnimationFrame(updateCountdownNum);
+}
+
+function skipCountdown() {
+  if (breathRAF) { cancelAnimationFrame(breathRAF); breathRAF=null; }
+  const arc = document.getElementById('countdown-arc');
+  arc.classList.remove('running');
+  arc.style.animation = 'none';
+  arc.style.strokeDashoffset = '427.3';
+  switchCheckinStep(2);
+}
+
+function onBreathDone() {
+  document.getElementById('countdown-wrap').style.display = 'none';
+  document.getElementById('breath-done-row').classList.add('visible');
+  setTimeout(() => switchCheckinStep(2), 1500);
+}
+
+function selectMood(el) {
+  document.querySelectorAll('.emoji-opt').forEach(o => {
+    o.classList.remove('selected');
+    o.querySelector('.emoji-bg').classList.remove('selected');
+  });
+  el.classList.add('selected');
+  el.querySelector('.emoji-bg').classList.add('selected');
+  checkinState.mood = el.dataset.val;
+}
+
+function updateStress(val) {
+  checkinState.stress = parseInt(val);
+  const pct = ((val-1)/9)*100;
+  document.getElementById('stress-fill').style.width = pct+'%';
+  document.querySelectorAll('#slider-nodes .sn').forEach((n,i) => n.classList.toggle('filled', i<parseInt(val)));
+  document.querySelectorAll('#slider-nums span').forEach((n,i) => n.classList.toggle('sn-active', i===parseInt(val)-1));
+}
+updateStress(5);
+
+// ── Drawer ────────────────────────────────────────────────────────────────
+let touchStartY = 0;
+const drawerEl = document.getElementById('drawer');
+drawerEl.addEventListener('touchstart', e=>{ touchStartY=e.touches[0].clientY; },{passive:true});
+drawerEl.addEventListener('touchmove', e=>{ if(e.touches[0].clientY-touchStartY>60) closeDrawer(); },{passive:true});
+
+function openDrawer() {
+  const stressRow = document.getElementById('drawer-stress-row');
+  const noteRow   = document.getElementById('drawer-note-row');
+  if (checkinState.stress) {
+    stressRow.style.display = 'flex';
+    document.getElementById('drawer-stress-val').textContent = checkinState.stress+'/10';
+  }
+  if (checkinState.note && checkinState.note.trim()) {
+    noteRow.style.display = 'flex';
+    document.getElementById('drawer-note-val').textContent = checkinState.note;
+  }
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('visible');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('visible');
+}
+
+function handleMonitorOneMore() { closeDrawer(); }
+
+document.getElementById('drawer-send-btn').addEventListener('click', function() {
+  const btn = this;
+  btn.innerHTML = '<div class="spinner"></div> Sending...';
+  btn.disabled = true;
+  setTimeout(() => {
+    document.querySelector('#drawer .flagged-section').style.transition='opacity .3s';
+    document.querySelector('#drawer .flagged-section').style.opacity='0';
+    setTimeout(()=>{ document.querySelector('#drawer .flagged-section').style.display='none'; },300);
+    document.querySelector('#drawer .drawer-note').style.transition='opacity .3s';
+    document.querySelector('#drawer .drawer-note').style.opacity='0';
+    setTimeout(()=>{ document.querySelector('#drawer .drawer-note').style.display='none'; },300);
+    btn.style.transition='height .3s,opacity .3s,padding .3s';
+    btn.style.height='0'; btn.style.opacity='0'; btn.style.padding='0'; btn.style.overflow='hidden';
+    const monBtn = document.getElementById('drawer-monitor-btn');
+    monBtn.style.transition='opacity .3s'; monBtn.style.opacity='0';
+    setTimeout(()=>{ monBtn.style.display='none'; },300);
+    document.getElementById('drawer-confirm-row').classList.add('visible');
+    drawerSent = true;
+    HISTORY_DATA[0].stress = checkinState.stress ? checkinState.stress+'/10' : null;
+    HISTORY_DATA[0].note   = checkinState.note || null;
+    renderHistory();
+    setTimeout(()=>{
+      const fc = document.getElementById('drawer-final');
+      fc.classList.add('visible');
+      void fc.offsetWidth;
+      fc.classList.add('fade-in');
+    },1000);
+  },800);
+});
+
+// ── History ───────────────────────────────────────────────────────────────
+const HISTORY_DATA = [
+  {id:'h-apr21',date:'Apr 21, 2026',status:'awaiting',
+   spo2:[{d:'Apr 19',v:'85.2% FEV1'},{d:'Apr 20',v:'84.1% FEV1'},{d:'Apr 21',v:'83.0% FEV1'}],
+   tidalVolume:'Slightly reduced',checkins:['Good','Good','Good'],stress:null,note:null},
+  {id:'h-mar03',date:'Mar 03, 2026',status:'reviewed',
+   spo2:[{d:'Mar 01',v:'85.1% FEV1'},{d:'Mar 02',v:'84.6% FEV1'}],
+   tidalVolume:null,checkins:['Good','Ok'],stress:null,note:null},
+  {id:'h-jan17',date:'Jan 17, 2026',status:'reviewed',
+   spo2:null,tidalVolume:'Reduced',checkins:['Ok','Ok','Sick'],stress:'8/10',note:null},
+  {id:'h-nov29',date:'Nov 29, 2025',status:'reviewed',
+   spo2:[{d:'Nov 25',v:'85.5% FEV1'},{d:'Nov 26',v:'84.8% FEV1'},{d:'Nov 27',v:'84.2% FEV1'},{d:'Nov 28',v:'83.9% FEV1'}],
+   tidalVolume:null,checkins:['Good','Good','Good','Good'],stress:null,note:null},
+];
+
+const MOOD_PILL = {Good:'pill-good',Ok:'pill-ok',Sick:'pill-sick'};
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+  HISTORY_DATA.forEach(entry => {
+    const pillCls   = entry.status==='reviewed' ? 'pill-reviewed' : 'pill-awaiting';
+    const pillLabel = entry.status==='reviewed' ? 'Reviewed' : 'Awaiting review';
+    let detailHTML = '';
+    if (entry.spo2) {
+      entry.spo2.forEach(r => {
+        detailHTML += `<div class="hd-row"><span class="hd-date">${r.d}</span><span class="hd-val">${r.v}</span><span class="hd-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="11"/><polyline points="3.5 7.5 7 11 10.5 7.5"/></svg></span></div>`;
+      });
+    }
+    if (entry.tidalVolume) detailHTML += `<div class="hd-row"><span class="hd-label">Tidal volume</span><span class="hd-detail">${entry.tidalVolume}</span></div>`;
+    if (entry.checkins && entry.checkins.length) {
+      const pillsHTML = entry.checkins.map(m=>`<span class="mood-pill ${MOOD_PILL[m]||'pill-ok'}">${m}</span>`).join('');
+      detailHTML += `<div class="hd-row"><span class="hd-label">Check-ins</span><div class="hd-pills">${pillsHTML}</div></div>`;
+    }
+    if (entry.stress) detailHTML += `<div class="hd-note-row">Stress: ${entry.stress}</div>`;
+    if (entry.note)   detailHTML += `<div class="hd-note-row" style="font-style:italic">"${entry.note}"</div>`;
+    const footerHTML = entry.status==='reviewed'
+      ? `<div class="hd-footer"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="var(--color-blue-light)"/><polyline points="4.5,8.5 6.5,10.5 11.5,5.5" fill="none" stroke="var(--color-blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="hd-reviewed-txt">Reviewed by care team</span></div>`
+      : `<div class="hd-footer"><span class="hd-awaiting-txt">Awaiting review</span></div>`;
+    const div = document.createElement('div');
+    div.className = entry.status==='reviewed' ? 'history-entry reviewed' : 'history-entry';
+    div.id = 'entry-'+entry.id;
+    div.innerHTML = `
+      <div class="history-entry-header" onclick="toggleEntry('${entry.id}')">
+        <span class="history-entry-date">${entry.date}</span>
+        <span class="history-status-pill ${pillCls}">${pillLabel}</span>
+      </div>
+      <div class="history-detail" id="detail-${entry.id}">
+        <div class="history-detail-inner">${detailHTML}${footerHTML}</div>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function toggleEntry(id) { document.getElementById('detail-'+id).classList.toggle('expanded'); }
+
+function toggleCiEntry(id) {
+  const isExpanded = document.getElementById(id).classList.contains('expanded');
+  document.querySelectorAll('#ci-history-card .ci-ce').forEach(el => el.classList.remove('expanded'));
+  if (!isExpanded) document.getElementById(id).classList.add('expanded');
+}
+
+// ── Check-in history rendering ────────────────────────────────────────────
+function ciState(metric, value) {
+  if (metric === 'fev1') return value >= 87 ? 'Stable' : value >= 85 ? 'Watch' : 'Drift';
+  if (metric === 'spo2') return value >= 97 ? 'Stable' : value >= 96 ? 'Watch' : 'Drift';
+  if (metric === 'hrv')  return value >= 50 ? 'Stable' : value >= 46 ? 'Watch' : 'Drift';
+  if (metric === 'rr')   return value >= 20 ? 'Drift'  : value >= 18 ? 'Watch' : 'Stable';
+  return 'Stable';
+}
+
+function ciStateColor(state) {
+  if (state === 'Drift') return '#F25F54';
+  if (state === 'Watch') return '#F29154';
+  return '#3E64BE';
+}
+
+function moodSvg(mood) {
+  const mouth = mood === 'good'
+    ? 'M8.5 14 Q12 17 15.5 14'
+    : mood === 'ok'
+    ? 'M8.5 14 L15.5 14'
+    : 'M8.5 17 Q12 14 15.5 17';
+  return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B6760" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1" fill="#6B6760" stroke="none"/><circle cx="15" cy="10" r="1" fill="#6B6760" stroke="none"/><path d="${mouth}"/></svg>`;
+}
+
+function ciGridCell(label, value, unit, state) {
+  return `<div class="ci-grid-cell"><span class="ci-grid-label">${label}</span><span class="ci-grid-value">${value}<span style="font-size:11px;font-weight:400;color:var(--color-text-secondary)"> ${unit}</span></span><span class="ci-grid-state" style="color:${ciStateColor(state)}">${state}</span></div>`;
+}
+
+function renderCiHistory() {
+  const card = document.getElementById('ci-history-card');
+  if (!card) return;
+  card.innerHTML = '';
+  DAILY_HISTORY.forEach((d, idx) => {
+    const id = 'cie' + idx;
+    const el = document.createElement('div');
+    el.className = 'ci-ce';
+    el.id = id;
+    el.innerHTML = `
+      <div class="ci-ce-header" onclick="toggleCiEntry('${id}')">
+        <span class="ci-ce-date">${d.date}</span>
+        <span class="ci-ce-emoji">${moodSvg(d.mood)}</span>
+        <span class="ci-ce-stress">Stress ${d.stress}/10</span>
+        <span class="ci-ce-chevron">›</span>
+      </div>
+      <div class="ci-ce-detail">
+        <div class="ci-grid">
+          ${ciGridCell('FEV1',      d.fev1,     '%',   ciState('fev1', d.fev1))}
+          ${ciGridCell('SpO₂',     d.spo2,     '%',   ciState('spo2', d.spo2))}
+          ${ciGridCell('HRV',       d.hrv,      'ms',  ciState('hrv',  d.hrv))}
+          ${ciGridCell('Resp rate', d.respRate, '/min', ciState('rr',  d.respRate))}
+        </div>
+      </div>`;
+    card.appendChild(el);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+updateVitalsDisplay(0);
+updateCiNav();
+updateNavBar();
+renderCiHistory();
+document.getElementById('screen-checkin').classList.add('active');
+renderChart('2w', false);
+
+// ── Notifications ─────────────────────────────────────────────────────────
+const NOTIFICATIONS = [
+  {id:'n1',read:false,time:'Today · 8:42 AM',
+   title:'Lab order from your care team',
+   body:'Your CF specialist has ordered labs. Check MyChart for details and scheduling.',
+   action:'mychart'},
+  {id:'n2',read:true,time:'Apr 19 · 2:15 PM',
+   title:'Care team reviewed your data',
+   body:'Your CF specialist reviewed the drift data you sent on Apr 19. No immediate action needed — continue monitoring.',
+   action:'none'},
+  {id:'n3',read:true,time:'Apr 14 · 11:03 AM',
+   title:'Appointment reminder',
+   body:'Your next clinic visit is scheduled for May 6. Pulmonary function test included.',
+   action:'none'},
+];
+
+let notificationPanelOpen = false;
+
+function updateBellState() {
+  const hasUnread = NOTIFICATIONS.some(n => !n.read);
+  document.querySelectorAll('.bell-btn').forEach(btn => {
+    btn.classList.toggle('unread', hasUnread);
+  });
+}
+
+function onBellTap(isLockScreen) {
+  if (isLockScreen) { shakeLockBell(); return; }
+  if (notificationPanelOpen) return;
+  openNotifPanel();
+}
+
+function shakeLockBell() {
+  const btn = document.getElementById('bell-lock');
+  if (!btn) return;
+  btn.classList.remove('shaking');
+  void btn.offsetWidth;
+  btn.classList.add('shaking');
+  setTimeout(() => btn.classList.remove('shaking'), 500);
+}
+
+function openNotifPanel() {
+  notificationPanelOpen = true;
+  // Always return to trends when closing
+  // Hide nav bar and drift bar immediately
+  document.querySelector('.bottom-nav').style.display = 'none';
+  document.getElementById('drift-sticky-bar').classList.remove('visible');
+  renderNotifPanel();
+  document.getElementById('notif-panel').classList.add('open');
+}
+
+function closeNotifPanel() {
+  document.getElementById('notif-panel').classList.remove('open');
+  notificationPanelOpen = false;
+  setTimeout(() => {
+    document.querySelector('.bottom-nav').style.display = '';
+    // Navigate to trends
+    if (currentTab !== 'trends') {
+      switchTab('trends');
+    } else {
+      // Already on trends — just trigger onScreenEnter
+      onScreenEnter('screen-trends');
+    }
+    // Ensure trends nav item is active
+    currentTab = 'trends';
+    updateNavBar();
+  }, 380);
+}
+
+function renderNotifPanel() {
+  const body = document.getElementById('notif-body');
+  body.innerHTML = '';
+  NOTIFICATIONS.forEach(n => {
+    const row = document.createElement('div');
+    row.className = 'notif-row' + (n.read ? ' read' : '');
+    const mychart = (n.action === 'mychart' && !n.read)
+      ? '<span class="notif-mychart-pill">Open MyChart →</span>' : '';
+    row.innerHTML = `
+      <div class="notif-dot-col">${n.read ? '' : '<div class="notif-dot"></div>'}</div>
+      <div class="notif-content">
+        <span class="notif-time">${n.time}</span>
+        <span class="notif-row-title">${n.title}</span>
+        <span class="notif-row-body">${n.body}</span>
+        ${mychart}
+      </div>`;
+    if (!n.read) {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => markNotifRead(n.id));
+    }
+    body.appendChild(row);
+  });
+}
+
+function markNotifRead(id) {
+  const n = NOTIFICATIONS.find(x => x.id === id);
+  if (!n || n.read) return;
+  n.read = true;
+  // Animate the row
+  const rows = document.querySelectorAll('#notif-body .notif-row');
+  const idx = NOTIFICATIONS.findIndex(x => x.id === id);
+  const row = rows[idx];
+  if (row) {
+    row.style.transition = 'opacity .3s';
+    row.style.opacity = '0.4';
+    setTimeout(() => {
+      row.style.opacity = '';
+      row.style.transition = '';
+      renderNotifPanel();
+    }, 300);
+  }
+  updateBellState();
+  if (n.action === 'mychart') {
+    setTimeout(() => showMyChartModal(), 200);
+  }
+}
+
+function showMyChartModal() {
+  const backdrop = document.getElementById('mychart-backdrop');
+  backdrop.classList.add('visible');
+}
+
+function hideMyChartModal() {
+  const backdrop = document.getElementById('mychart-backdrop');
+  backdrop.classList.remove('visible');
+}
+
+// Tap backdrop to dismiss
+document.getElementById('mychart-backdrop').addEventListener('click', function(e) {
+  if (e.target === this) hideMyChartModal();
+});
+
+// Init bell state
+updateBellState();
+</script>
+</body>
+</html>
